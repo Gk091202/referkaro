@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -22,6 +22,11 @@ export default function AdminJobsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedJob, setExpandedJob] = useState<string | null>(null);
+
+  const toggleExpand = (jobId: string) => {
+    setExpandedJob(expandedJob === jobId ? null : jobId);
+  };
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -160,6 +165,52 @@ export default function AdminJobsPage() {
                     <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
                       {job.description}
                     </p>
+
+                    {/* Expand/Collapse Button */}
+                    <button
+                      onClick={() => toggleExpand(job.$id)}
+                      className="mt-3 flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      {expandedJob === job.$id ? (
+                        <>
+                          <ChevronUp className="h-4 w-4" />
+                          Hide Details
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" />
+                          View Full Details
+                        </>
+                      )}
+                    </button>
+
+                    {/* Expanded Details */}
+                    {expandedJob === job.$id && (
+                      <div className="mt-4 space-y-4 border-t border-border pt-4">
+                        {/* Full Description */}
+                        <div>
+                          <h4 className="text-sm font-medium text-foreground mb-2">
+                            Full Description
+                          </h4>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {job.description}
+                          </p>
+                        </div>
+
+                        {/* Referral Notes */}
+                        <div className="rounded-lg bg-secondary/50 p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MessageSquare className="h-4 w-4 text-primary" />
+                            <h4 className="text-sm font-medium text-foreground">
+                              Referral Notes
+                            </h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {job.referralNotes || "No referral notes provided."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
