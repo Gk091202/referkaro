@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
 import { Button } from "@/components/ui";
+import { CTASection } from "./CTASection";
 
 export default function HomePage() {
   return (
@@ -223,35 +224,7 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="border-t border-border bg-card/50 py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Ready to get started?
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Join thousands of professionals already using referkaro to find
-                their next opportunity.
-              </p>
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link href="/jobs">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Browse Jobs
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Create Account
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <CTASection />
       </main>
 
       <Footer />
