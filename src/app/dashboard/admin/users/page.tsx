@@ -53,7 +53,11 @@ export default function AdminUsersPage() {
       }
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update user. Make sure 'isActive' attribute exists in Appwrite users collection.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update user. Make sure 'isActive' attribute exists in Appwrite users collection."
+      );
     } finally {
       setIsUpdating(null);
     }
@@ -194,7 +198,9 @@ export default function AdminUsersPage() {
                           disabled={isUpdating === user.$id}
                         >
                           <UserX className="mr-1 h-4 w-4" />
-                          {isUpdating === user.$id ? "Updating..." : "Deactivate"}
+                          {isUpdating === user.$id
+                            ? "Updating..."
+                            : "Deactivate"}
                         </Button>
                       ) : (
                         <Button
@@ -203,7 +209,9 @@ export default function AdminUsersPage() {
                           disabled={isUpdating === user.$id}
                         >
                           <UserCheck className="mr-1 h-4 w-4" />
-                          {isUpdating === user.$id ? "Updating..." : "Reactivate"}
+                          {isUpdating === user.$id
+                            ? "Updating..."
+                            : "Reactivate"}
                         </Button>
                       )}
                     </div>

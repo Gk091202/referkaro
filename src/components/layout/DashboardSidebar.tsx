@@ -10,8 +10,11 @@ import {
   Briefcase,
   BarChart3,
   Shield,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks";
+import { Button } from "@/components/ui";
 import type { UserRole } from "@/lib/types";
 
 interface DashboardSidebarProps {
@@ -20,6 +23,7 @@ interface DashboardSidebarProps {
 
 function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   const links: Record<
     UserRole,
@@ -114,6 +118,26 @@ function DashboardSidebar({ role }: DashboardSidebarProps) {
             );
           })}
         </nav>
+
+        {/* User Info & Logout */}
+        <div className="border-t border-border pt-4 mt-4">
+          <div className="px-3 py-2 mb-2">
+            <p className="text-sm font-medium text-foreground truncate">
+              {user?.name}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.email}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+            onClick={() => signOut()}
+          >
+            <LogOut className="h-5 w-5" />
+            Sign out
+          </Button>
+        </div>
       </div>
     </aside>
   );
