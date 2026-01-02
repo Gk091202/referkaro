@@ -182,6 +182,7 @@ export async function createJob(
       company: data.company,
       role: data.role,
       description: data.description,
+      referralNotes: data.referralNotes,
       location: data.location,
       status: "pending",
       referrerId: referrer.$id,
