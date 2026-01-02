@@ -1,22 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { UserX, UserCheck, Mail, Calendar } from "lucide-react";
+import { Mail, Calendar } from "lucide-react";
 import {
   Card,
   CardContent,
-  Button,
   Badge,
   Avatar,
   LoadingPage,
   Alert,
   Select,
 } from "@/components/ui";
-import {
-  getAllUsers,
-  deactivateUser,
-  reactivateUser,
-} from "@/lib/appwrite/api";
+import { getAllUsers } from "@/lib/appwrite/api";
 import { formatDate } from "@/lib/utils";
 import type { User, UserRole } from "@/lib/types";
 
@@ -24,7 +19,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -41,22 +35,6 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  const handleToggleActive = async (user: User) => {
-    setIsUpdating(user.$id);
-    try {
-      if (user.isActive) {
-        await deactivateUser(user.$id);
-      } else {
-        await reactivateUser(user.$id);
-      }
-      await fetchUsers();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update user");
-    } finally {
-      setIsUpdating(null);
-    }
-  };
 
   const filteredUsers =
     filter === "all" ? users : users.filter((u) => u.role === filter);
@@ -85,7 +63,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Manage Users</h1>
           <p className="mt-1 text-muted-foreground">
-            View and manage platform users
+            View platform users
           </p>
         </div>
 
@@ -165,9 +143,6 @@ export default function AdminUsersPage() {
                         <Badge variant={getRoleBadgeColor(user.role)}>
                           {user.role}
                         </Badge>
-                        {!user.isActive && (
-                          <Badge variant="destructive">Deactivated</Badge>
-                        )}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
@@ -179,39 +154,8 @@ export default function AdminUsersPage() {
                           Joined {formatDate(user.$createdAt)}
                         </span>
                       </div>
-                      {user.company && (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          Company: {user.company}
-                        </p>
-                      )}
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  {user.role !== "admin" && (
-                    <div>
-                      {user.isActive ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleToggleActive(user)}
-                          disabled={isUpdating === user.$id}
-                        >
-                          <UserX className="mr-1 h-4 w-4" />
-                          Deactivate
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handleToggleActive(user)}
-                          disabled={isUpdating === user.$id}
-                        >
-                          <UserCheck className="mr-1 h-4 w-4" />
-                          Reactivate
-                        </Button>
-                      )}
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
