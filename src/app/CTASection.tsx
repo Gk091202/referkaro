@@ -20,6 +20,23 @@ export function CTASection() {
   }
 
   if (isAuthenticated && user) {
+    const getDashboardLink = () => `/dashboard/${user.role}`;
+
+    const getSecondaryAction = () => {
+      if (user.role === "applicant") {
+        return { href: "/jobs", label: "Browse Jobs" };
+      }
+      if (user.role === "referrer") {
+        return { href: "/dashboard/referrer/jobs/new", label: "Post a Job" };
+      }
+      if (user.role === "admin") {
+        return { href: "/dashboard/admin/jobs", label: "Manage Jobs" };
+      }
+      return { href: "/jobs", label: "Browse Jobs" };
+    };
+
+    const secondaryAction = getSecondaryAction();
+
     return (
       <section className="border-t border-border bg-card/50 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -36,16 +53,16 @@ export function CTASection() {
                 "Manage the platform, moderate jobs and users."}
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/jobs">
+              <Link href={secondaryAction.href}>
                 <Button
                   size="lg"
                   variant="outline"
                   className="w-full sm:w-auto"
                 >
-                  Browse Jobs
+                  {secondaryAction.label}
                 </Button>
               </Link>
-              <Link href={`/dashboard/${user.role}`}>
+              <Link href={getDashboardLink()}>
                 <Button size="lg" className="w-full sm:w-auto">
                   Go to Dashboard
                 </Button>
