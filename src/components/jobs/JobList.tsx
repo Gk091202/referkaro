@@ -11,6 +11,8 @@ interface JobListProps {
   emptyDescription?: string;
   showCreateButton?: boolean;
   appliedJobIds?: string[];
+  savedJobIds?: string[];
+  onToggleSave?: (jobId: string) => void;
 }
 
 function JobList({
@@ -20,6 +22,8 @@ function JobList({
   emptyDescription = "There are no jobs to display at the moment.",
   showCreateButton = false,
   appliedJobIds = [],
+  savedJobIds = [],
+  onToggleSave,
 }: JobListProps) {
   if (jobs.length === 0) {
     return (
@@ -47,6 +51,8 @@ function JobList({
           showStatus={showStatus}
           href={`/jobs/${job.$id}`}
           hasApplied={appliedJobIds.includes(job.$id)}
+          isSaved={savedJobIds.includes(job.$id)}
+          onToggleSave={onToggleSave}
         />
       ))}
     </div>

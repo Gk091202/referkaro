@@ -72,6 +72,7 @@ export default function ApplicantApplicationsPage() {
         applications={applications}
         jobs={jobs}
         showApplicantInfo={false}
+        showTimeline={true}
         emptyTitle="No applications yet"
         emptyDescription="You haven't applied to any jobs yet. Browse available positions to get started."
       />

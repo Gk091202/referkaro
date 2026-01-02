@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Clock, ExternalLink, Building2, MessageSquare } from "lucide-react";
+import {
+  Clock,
+  ExternalLink,
+  Building2,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,6 +16,7 @@ import {
   Avatar,
   Button,
 } from "@/components/ui";
+import { ApplicationTimeline } from "./ApplicationTimeline";
 import { formatRelativeDate } from "@/lib/utils";
 import type { Application, Job } from "@/lib/types";
 
@@ -20,6 +29,7 @@ interface ApplicationCardProps {
     status: "approved" | "rejected"
   ) => void;
   isUpdating?: boolean;
+  showTimeline?: boolean;
 }
 
 function ApplicationCard({
@@ -28,7 +38,10 @@ function ApplicationCard({
   showApplicantInfo = false,
   onStatusChange,
   isUpdating = false,
+  showTimeline = false,
 }: ApplicationCardProps) {
+  const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
+
   return (
     <Card className="h-full">
       <CardContent className="p-0">
@@ -71,6 +84,37 @@ function ApplicationCard({
           <p className="text-sm text-muted-foreground line-clamp-3">
             {application.message}
           </p>
+
+          {/* Timeline Toggle for applicant view */}
+          {showTimeline && !showApplicantInfo && (
+            <div className="border-t border-border pt-4">
+              <button
+                onClick={() => setIsTimelineExpanded(!isTimelineExpanded)}
+                className="flex items-center gap-2 text-sm text-primary hover:underline w-full"
+              >
+                {isTimelineExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Hide Timeline
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Show Timeline
+                  </>
+                )}
+              </button>
+              {isTimelineExpanded && (
+                <div className="mt-4">
+                  <ApplicationTimeline
+                    statusHistory={application.statusHistory}
+                    currentStatus={application.status}
+                    createdAt={application.$createdAt}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Referral Notes - shown to applicants */}
           {!showApplicantInfo && job && (

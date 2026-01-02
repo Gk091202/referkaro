@@ -10,6 +10,7 @@ import {
   User,
   MessageSquare,
   CheckCircle2,
+  BadgeCheck,
 } from "lucide-react";
 import {
   Card,
@@ -209,10 +210,22 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
               {job.referrerName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-medium text-foreground">{job.referrerName}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">
+                  {job.referrerName}
+                </p>
+                {job.isReferrerVerified && (
+                  <span title="Verified Referrer" className="flex items-center">
+                    <BadgeCheck className="h-5 w-5 text-primary" />
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 Employee at {job.company}
               </p>
+              {job.isReferrerVerified && (
+                <p className="text-xs text-primary mt-1">✓ Verified employee</p>
+              )}
             </div>
           </div>
         </CardContent>

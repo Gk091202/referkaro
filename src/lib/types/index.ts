@@ -5,10 +5,27 @@ export type UserRole = "applicant" | "referrer" | "admin";
 export type JobStatus = "pending" | "approved" | "rejected";
 
 // Application Status
-export type ApplicationStatus = "pending" | "approved" | "rejected";
+export type ApplicationStatus =
+  | "pending"
+  | "reviewing"
+  | "shortlisted"
+  | "interviewing"
+  | "hired"
+  | "approved"
+  | "rejected";
 
 // Location Type
 export type LocationType = "remote" | "hybrid" | "onsite";
+
+// Notification Type
+export type NotificationType =
+  | "application_received"
+  | "application_status_update"
+  | "application_approved"
+  | "application_rejected"
+  | "job_approved"
+  | "job_rejected"
+  | "new_job_match";
 
 // User Document
 export interface User {
@@ -20,8 +37,15 @@ export interface User {
   role: UserRole;
   company?: string;
   bio?: string;
-  linkedIn?: string;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string;
+  skills?: string[];
   isActive: boolean;
+  isVerified?: boolean;
+  verificationRequested?: boolean;
+  verifiedAt?: string;
+  emailNotifications?: boolean;
 }
 
 // Job Document
@@ -38,6 +62,8 @@ export interface Job {
   referrerId: string;
   referrerName: string;
   referrerEmail: string;
+  isReferrerVerified?: boolean;
+  viewCount?: number;
 }
 
 // Application Document
@@ -52,6 +78,47 @@ export interface Application {
   message: string;
   resumeLink: string;
   status: ApplicationStatus;
+  statusUpdatedAt?: string;
+  statusHistory?: ApplicationStatusChange[];
+}
+
+// Application Status Change for timeline
+export interface ApplicationStatusChange {
+  status: ApplicationStatus;
+  timestamp: string;
+  changedAt?: string;
+  changedBy?: string;
+  note?: string;
+}
+
+// Saved Job Document
+export interface SavedJob {
+  $id: string;
+  $createdAt: string;
+  userId: string;
+  jobId: string;
+}
+
+// Notification Document
+export interface Notification {
+  $id: string;
+  $createdAt: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  relatedId?: string;
+}
+
+// Testimonial Document
+export interface Testimonial {
+  $id: string;
+  name: string;
+  role: string;
+  company: string;
+  message: string;
+  imageUrl?: string;
 }
 
 // Extended types for UI
@@ -108,4 +175,31 @@ export interface PlatformStats {
   approvedJobs: number;
   totalApplications: number;
   pendingApplications: number;
+  successfulReferrals: number;
+}
+
+// Referrer Analytics
+export interface ReferrerAnalytics {
+  totalJobs: number;
+  totalViews: number;
+  totalJobViews: number;
+  totalApplications: number;
+  approvedApplications: number;
+  hiredCount: number;
+  conversionRate: number;
+  jobStats: {
+    jobId: string;
+    role: string;
+    company: string;
+    views: number;
+    applications: number;
+  }[];
+}
+
+// Search and Filter types
+export interface JobFilters {
+  search?: string;
+  location?: LocationType | "all";
+  company?: string;
+  sortBy?: "newest" | "oldest" | "company";
 }

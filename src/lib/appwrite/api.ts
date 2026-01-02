@@ -17,6 +17,10 @@ import type {
   JobStatus,
   ApplicationStatus,
   PlatformStats,
+  SavedJob,
+  Notification,
+  NotificationType,
+  ReferrerAnalytics,
 } from "@/lib/types";
 
 // ============================================
@@ -31,34 +35,96 @@ export async function signUp(data: SignUpData): Promise<User> {
     // No existing session, continue
   }
 
-  // Create Appwrite account
-  const authAccount = await account.create(
-    ID.unique(),
-    data.email,
-    data.password,
-    data.name
-  );
+  let authAccountId: string;
 
-  // Create session
-  await account.createEmailPasswordSession(data.email, data.password);
+  try {
+    // Create Appwrite account
+    const authAccount = await account.create(
+      ID.unique(),
+      data.email,
+      data.password,
+      data.name
+    );
+    authAccountId = authAccount.$id;
+  } catch (error: unknown) {
+    // If user already exists in Auth, try to sign in and get their ID
+    if (error instanceof Error && error.message.includes("already exists")) {
+      try {
+        await account.createEmailPasswordSession(data.email, data.password);
+        const authUser = await account.get();
+        authAccountId = authUser.$id;
+
+        // Check if user document exists
+        try {
+          const existingUser = await databases.getDocument(
+            DATABASE_ID,
+            COLLECTIONS.USERS,
+            authAccountId
+          );
+          return existingUser as unknown as User;
+        } catch {
+          // User doc doesn't exist, will create below
+        }
+      } catch {
+        throw new Error(
+          "An account with this email already exists. Please sign in instead."
+        );
+      }
+    } else {
+      throw error;
+    }
+  }
+
+  // Create session if not already created
+  try {
+    await account.createEmailPasswordSession(data.email, data.password);
+  } catch {
+    // Session might already exist
+  }
 
   // Create user document in database
-  const userDoc = await databases.createDocument(
-    DATABASE_ID,
-    COLLECTIONS.USERS,
-    authAccount.$id,
-    {
-      email: data.email,
-      name: data.name,
-      role: data.role,
+  try {
+    const userDoc = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.USERS,
+      authAccountId,
+      {
+        email: data.email,
+        name: data.name,
+        role: data.role,
+        bio: "",
+        linkedin: "",
+        github: "",
+        portfolio: "",
+        company: "",
+        skills: [],
+        isVerified: false,
+      }
+    );
+    return userDoc as unknown as User;
+  } catch (error: unknown) {
+    // If document already exists, fetch and return it
+    if (error instanceof Error && error.message.includes("already exists")) {
+      const existingDoc = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.USERS,
+        authAccountId
+      );
+      return existingDoc as unknown as User;
     }
-  );
-
-  return userDoc as unknown as User;
+    throw error;
+  }
 }
 
 export async function signIn(email: string, password: string) {
-  // Create session (don't delete existing - causes extra API calls)
+  // Delete any existing session first
+  try {
+    await account.deleteSession("current");
+  } catch {
+    // No existing session, continue
+  }
+
+  // Create session
   await account.createEmailPasswordSession(email, password);
 
   // Get the auth user
@@ -77,6 +143,13 @@ export async function signIn(email: string, password: string) {
         email: authUser.email,
         name: authUser.name || email.split("@")[0],
         role: "applicant",
+        bio: "",
+        linkedin: "",
+        github: "",
+        portfolio: "",
+        company: "",
+        skills: [],
+        isVerified: false,
       }
     );
   }
@@ -200,7 +273,22 @@ export async function getJobById(jobId: string): Promise<Job | null> {
       COLLECTIONS.JOBS,
       jobId
     );
-    return jobDoc as unknown as Job;
+    const job = jobDoc as unknown as Job;
+
+    // Fetch referrer's verification status
+    try {
+      const referrerDoc = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.USERS,
+        job.referrerId
+      );
+      job.isReferrerVerified =
+        (referrerDoc as unknown as User).isVerified || false;
+    } catch {
+      job.isReferrerVerified = false;
+    }
+
+    return job;
   } catch {
     return null;
   }
@@ -411,5 +499,317 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalApplications: applications.length,
     pendingApplications: applications.filter((a) => a.status === "pending")
       .length,
+    successfulReferrals: applications.filter((a) => a.status === "approved")
+      .length,
   };
+}
+
+// ============================================
+// SAVED JOBS (BOOKMARKS)
+// ============================================
+
+export async function saveJob(
+  userId: string,
+  jobId: string
+): Promise<SavedJob> {
+  const savedJobDoc = await databases.createDocument(
+    DATABASE_ID,
+    COLLECTIONS.SAVED_JOBS,
+    ID.unique(),
+    {
+      userId,
+      jobId,
+    }
+  );
+  return savedJobDoc as unknown as SavedJob;
+}
+
+export async function unsaveJob(userId: string, jobId: string): Promise<void> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    COLLECTIONS.SAVED_JOBS,
+    [Query.equal("userId", userId), Query.equal("jobId", jobId), Query.limit(1)]
+  );
+
+  if (response.documents.length > 0) {
+    await databases.deleteDocument(
+      DATABASE_ID,
+      COLLECTIONS.SAVED_JOBS,
+      response.documents[0].$id
+    );
+  }
+}
+
+export async function getSavedJobs(userId: string): Promise<SavedJob[]> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    COLLECTIONS.SAVED_JOBS,
+    [
+      Query.equal("userId", userId),
+      Query.orderDesc("$createdAt"),
+      Query.limit(100),
+    ]
+  );
+  return response.documents as unknown as SavedJob[];
+}
+
+export async function isJobSaved(
+  userId: string,
+  jobId: string
+): Promise<boolean> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    COLLECTIONS.SAVED_JOBS,
+    [Query.equal("userId", userId), Query.equal("jobId", jobId), Query.limit(1)]
+  );
+  return response.documents.length > 0;
+}
+
+// ============================================
+// JOB VIEWS TRACKING
+// ============================================
+
+export async function incrementJobViews(jobId: string): Promise<void> {
+  try {
+    const job = await getJobById(jobId);
+    if (job) {
+      await databases.updateDocument(DATABASE_ID, COLLECTIONS.JOBS, jobId, {
+        viewCount: (job.viewCount || 0) + 1,
+      });
+    }
+  } catch {
+    // Silently fail - views are not critical
+  }
+}
+
+// ============================================
+// REFERRER ANALYTICS
+// ============================================
+
+export async function getReferrerAnalytics(
+  referrerId: string
+): Promise<ReferrerAnalytics> {
+  const [jobsResponse, applicationsResponse] = await Promise.all([
+    databases.listDocuments(DATABASE_ID, COLLECTIONS.JOBS, [
+      Query.equal("referrerId", referrerId),
+      Query.limit(100),
+    ]),
+    databases.listDocuments(DATABASE_ID, COLLECTIONS.APPLICATIONS, [
+      Query.limit(1000),
+    ]),
+  ]);
+
+  const jobs = jobsResponse.documents as unknown as Job[];
+  const allApplications =
+    applicationsResponse.documents as unknown as Application[];
+
+  const jobIds = jobs.map((j) => j.$id);
+  const myApplications = allApplications.filter((a) =>
+    jobIds.includes(a.jobId)
+  );
+
+  const totalJobs = jobs.length;
+  const totalJobViews = jobs.reduce(
+    (sum, job) => sum + (job.viewCount || 0),
+    0
+  );
+  const totalViews = totalJobViews;
+  const totalApplications = myApplications.length;
+  const approvedApplications = myApplications.filter(
+    (a) => a.status === "approved"
+  ).length;
+  const hiredCount = myApplications.filter((a) => a.status === "hired").length;
+  const conversionRate =
+    totalJobViews > 0 ? (totalApplications / totalJobViews) * 100 : 0;
+
+  const jobStats = jobs.map((job) => ({
+    jobId: job.$id,
+    role: job.role,
+    company: job.company,
+    views: job.viewCount || 0,
+    applications: myApplications.filter((a) => a.jobId === job.$id).length,
+  }));
+
+  return {
+    totalJobs,
+    totalViews,
+    totalJobViews,
+    totalApplications,
+    approvedApplications,
+    hiredCount,
+    conversionRate,
+    jobStats,
+  };
+}
+
+// ============================================
+// USER PROFILE UPDATES
+// ============================================
+
+export async function updateUserProfile(
+  userId: string,
+  data: {
+    name?: string;
+    bio?: string;
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+    skills?: string[];
+    company?: string;
+    emailNotifications?: boolean;
+  }
+): Promise<User> {
+  // Only include fields that exist in your Appwrite users collection
+  // Add more fields here after creating them in Appwrite Console
+  const allowedFields: Record<string, unknown> = {};
+
+  // These are the fields that exist in your Appwrite users collection
+  if (data.name !== undefined) allowedFields.name = data.name;
+  if (data.bio !== undefined) allowedFields.bio = data.bio;
+  if (data.linkedin !== undefined) allowedFields.linkedin = data.linkedin;
+  if (data.github !== undefined) allowedFields.github = data.github;
+  if (data.portfolio !== undefined) allowedFields.portfolio = data.portfolio;
+  if (data.skills !== undefined) allowedFields.skills = data.skills;
+  if (data.company !== undefined) allowedFields.company = data.company;
+  if (data.emailNotifications !== undefined)
+    allowedFields.emailNotifications = data.emailNotifications;
+
+  if (Object.keys(allowedFields).length === 0) {
+    // Nothing to update, just return current user
+    const userDoc = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.USERS,
+      userId
+    );
+    return userDoc as unknown as User;
+  }
+
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    allowedFields
+  );
+  return userDoc as unknown as User;
+}
+
+// ============================================
+// REFERRER VERIFICATION
+// ============================================
+
+// Request verification (called by referrer)
+export async function requestVerification(userId: string): Promise<User> {
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    {
+      verificationRequested: true,
+    }
+  );
+  return userDoc as unknown as User;
+}
+
+// Approve verification (called by admin)
+export async function approveVerification(userId: string): Promise<User> {
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    {
+      isVerified: true,
+      verificationRequested: false,
+      verifiedAt: new Date().toISOString(),
+    }
+  );
+  return userDoc as unknown as User;
+}
+
+// Reject verification (called by admin)
+export async function rejectVerification(userId: string): Promise<User> {
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    {
+      verificationRequested: false,
+    }
+  );
+  return userDoc as unknown as User;
+}
+
+// Get pending verification requests
+export async function getPendingVerifications(): Promise<User[]> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    [
+      Query.equal("role", "referrer"),
+      Query.equal("verificationRequested", true),
+      Query.limit(100),
+    ]
+  );
+  return response.documents as unknown as User[];
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+export async function createNotification(
+  userId: string,
+  type: NotificationType,
+  title: string,
+  message: string,
+  relatedId?: string
+): Promise<Notification> {
+  const notificationDoc = await databases.createDocument(
+    DATABASE_ID,
+    COLLECTIONS.NOTIFICATIONS,
+    ID.unique(),
+    {
+      userId,
+      type,
+      title,
+      message,
+      isRead: false,
+      relatedId,
+    }
+  );
+  return notificationDoc as unknown as Notification;
+}
+
+export async function getNotifications(
+  userId: string
+): Promise<Notification[]> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    COLLECTIONS.NOTIFICATIONS,
+    [
+      Query.equal("userId", userId),
+      Query.orderDesc("$createdAt"),
+      Query.limit(50),
+    ]
+  );
+  return response.documents as unknown as Notification[];
+}
+
+export async function markNotificationRead(
+  notificationId: string
+): Promise<void> {
+  await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.NOTIFICATIONS,
+    notificationId,
+    { isRead: true }
+  );
+}
+
+export async function markAllNotificationsRead(userId: string): Promise<void> {
+  const notifications = await getNotifications(userId);
+  await Promise.all(
+    notifications
+      .filter((n) => !n.isRead)
+      .map((n) => markNotificationRead(n.$id))
+  );
 }

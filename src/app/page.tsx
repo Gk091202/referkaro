@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Navbar, Footer } from "@/components/layout";
 import { Button } from "@/components/ui";
+import { SocialProof } from "@/components/home";
 import { CTASection } from "./CTASection";
 
 export default function HomePage() {
@@ -222,6 +223,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Social Proof Section */}
+        <SocialProof />
 
         {/* CTA Section */}
         <CTASection />

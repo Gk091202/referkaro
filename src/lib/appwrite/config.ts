@@ -24,6 +24,11 @@ export const COLLECTIONS = {
   APPLICATIONS:
     process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS_COLLECTION_ID ||
     "applications",
+  SAVED_JOBS:
+    process.env.NEXT_PUBLIC_APPWRITE_SAVED_JOBS_COLLECTION_ID || "saved_jobs",
+  NOTIFICATIONS:
+    process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID ||
+    "notifications",
 };
 
 export { client, ID, Query };

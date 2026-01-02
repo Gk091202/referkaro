@@ -14,10 +14,13 @@ import {
   Briefcase,
   BarChart3,
   LogOut,
+  Bookmark,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/hooks";
 import { Button } from "@/components/ui";
+import { NotificationBell } from "./NotificationBell";
 import type { UserRole } from "@/lib/types";
 
 interface DashboardHeaderProps {
@@ -44,6 +47,16 @@ function DashboardHeader({ role }: DashboardHeaderProps) {
         label: "Applications",
         icon: FileText,
       },
+      {
+        href: "/dashboard/applicant/saved",
+        label: "Saved Jobs",
+        icon: Bookmark,
+      },
+      {
+        href: "/dashboard/applicant/profile",
+        label: "Profile",
+        icon: User,
+      },
       { href: "/jobs", label: "Browse Jobs", icon: Briefcase },
     ],
     referrer: [
@@ -58,6 +71,16 @@ function DashboardHeader({ role }: DashboardHeaderProps) {
         href: "/dashboard/referrer/applications",
         label: "Applications",
         icon: FileText,
+      },
+      {
+        href: "/dashboard/referrer/analytics",
+        label: "Analytics",
+        icon: BarChart3,
+      },
+      {
+        href: "/dashboard/referrer/profile",
+        label: "Profile",
+        icon: User,
       },
     ],
     admin: [
@@ -86,17 +109,21 @@ function DashboardHeader({ role }: DashboardHeaderProps) {
           <span className="text-lg font-bold text-foreground">referkaro</span>
         </Link>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="rounded-lg p-2 text-muted-foreground hover:bg-secondary"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          {/* Mobile Menu Button */}
+          <button
+            className="rounded-lg p-2 text-muted-foreground hover:bg-secondary"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}

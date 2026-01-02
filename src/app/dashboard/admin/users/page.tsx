@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { UserX, UserCheck, Mail, Calendar } from "lucide-react";
+import {
+  UserX,
+  UserCheck,
+  Mail,
+  Calendar,
+  BadgeCheck,
+  X,
+  ExternalLink,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -16,6 +24,8 @@ import {
   getAllUsers,
   deactivateUser,
   reactivateUser,
+  approveVerification,
+  rejectVerification,
 } from "@/lib/appwrite/api";
 import { formatDate } from "@/lib/utils";
 import type { User, UserRole } from "@/lib/types";
@@ -26,6 +36,7 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -62,6 +73,46 @@ export default function AdminUsersPage() {
       setIsUpdating(null);
     }
   };
+
+  const handleApproveVerification = async (user: User) => {
+    setIsUpdating(user.$id);
+    setError(null);
+    setSuccess(null);
+    try {
+      await approveVerification(user.$id);
+      setSuccess(`${user.name} has been verified!`);
+      await fetchUsers();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to approve verification. Make sure 'isVerified' and 'verificationRequested' attributes exist."
+      );
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleRejectVerification = async (user: User) => {
+    setIsUpdating(user.$id);
+    setError(null);
+    setSuccess(null);
+    try {
+      await rejectVerification(user.$id);
+      setSuccess(`Verification request from ${user.name} has been rejected.`);
+      await fetchUsers();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to reject verification."
+      );
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const pendingVerifications = users.filter(
+    (u) => u.role === "referrer" && u.verificationRequested && !u.isVerified
+  );
 
   const filteredUsers =
     filter === "all" ? users : users.filter((u) => u.role === filter);
@@ -114,6 +165,78 @@ export default function AdminUsersPage() {
         <Alert variant="error" title="Error">
           {error}
         </Alert>
+      )}
+
+      {success && (
+        <Alert variant="success" title="Success">
+          {success}
+        </Alert>
+      )}
+
+      {/* Pending Verifications */}
+      {pendingVerifications.length > 0 && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="p-0">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <BadgeCheck className="h-5 w-5 text-primary" />
+              Pending Verification Requests ({pendingVerifications.length})
+            </h2>
+            <div className="space-y-3">
+              {pendingVerifications.map((user) => (
+                <div
+                  key={user.$id}
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 bg-background rounded-lg border border-border"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar name={user.name} size="md" />
+                    <div>
+                      <h3 className="font-medium text-foreground">
+                        {user.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                      {user.company && (
+                        <p className="text-sm text-muted-foreground">
+                          Company: {user.company}
+                        </p>
+                      )}
+                      {user.linkedin && (
+                        <a
+                          href={user.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          View LinkedIn <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleApproveVerification(user)}
+                      disabled={isUpdating === user.$id}
+                    >
+                      <BadgeCheck className="mr-1 h-4 w-4" />
+                      {isUpdating === user.$id ? "..." : "Approve"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRejectVerification(user)}
+                      disabled={isUpdating === user.$id}
+                    >
+                      <X className="mr-1 h-4 w-4" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Stats */}
@@ -170,6 +293,15 @@ export default function AdminUsersPage() {
                         <Badge variant={getRoleBadgeColor(user.role)}>
                           {user.role}
                         </Badge>
+                        {user.role === "referrer" && user.isVerified && (
+                          <Badge
+                            variant="success"
+                            className="flex items-center gap-1"
+                          >
+                            <BadgeCheck className="h-3 w-3" />
+                            Verified
+                          </Badge>
+                        )}
                         {user.isActive === false && (
                           <Badge variant="destructive">Deactivated</Badge>
                         )}

@@ -11,10 +11,13 @@ import {
   BarChart3,
   Shield,
   LogOut,
+  Bookmark,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/hooks";
 import { Button } from "@/components/ui";
+import { NotificationBell } from "./NotificationBell";
 import type { UserRole } from "@/lib/types";
 
 interface DashboardSidebarProps {
@@ -40,6 +43,16 @@ function DashboardSidebar({ role }: DashboardSidebarProps) {
         label: "My Applications",
         icon: FileText,
       },
+      {
+        href: "/dashboard/applicant/saved",
+        label: "Saved Jobs",
+        icon: Bookmark,
+      },
+      {
+        href: "/dashboard/applicant/profile",
+        label: "Profile",
+        icon: User,
+      },
       { href: "/jobs", label: "Browse Jobs", icon: Briefcase },
     ],
     referrer: [
@@ -54,6 +67,16 @@ function DashboardSidebar({ role }: DashboardSidebarProps) {
         href: "/dashboard/referrer/applications",
         label: "Applications",
         icon: FileText,
+      },
+      {
+        href: "/dashboard/referrer/analytics",
+        label: "Analytics",
+        icon: BarChart3,
+      },
+      {
+        href: "/dashboard/referrer/profile",
+        label: "Profile",
+        icon: User,
       },
     ],
     admin: [
@@ -121,13 +144,17 @@ function DashboardSidebar({ role }: DashboardSidebarProps) {
 
         {/* User Info & Logout */}
         <div className="border-t border-border pt-4 mt-4">
-          <div className="px-3 py-2 mb-2">
-            <p className="text-sm font-medium text-foreground truncate">
-              {user?.name}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-            </p>
+          {/* Notifications */}
+          <div className="flex items-center justify-between px-3 py-2 mb-2">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {user?.name}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+            <NotificationBell />
           </div>
           <Button
             variant="ghost"

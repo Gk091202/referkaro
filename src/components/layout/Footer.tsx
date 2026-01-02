@@ -12,13 +12,12 @@ function Footer() {
       { label: "For Applicants", href: "/signup?role=applicant" },
     ],
     company: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
     ],
     legal: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
   };
 

@@ -7,6 +7,7 @@ interface ApplicationListProps {
   applications: Application[];
   jobs?: Map<string, Job>;
   showApplicantInfo?: boolean;
+  showTimeline?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
   onStatusChange?: (
@@ -20,6 +21,7 @@ function ApplicationList({
   applications,
   jobs,
   showApplicantInfo = false,
+  showTimeline = false,
   emptyTitle = "No applications",
   emptyDescription = "There are no applications to display.",
   onStatusChange,
@@ -43,6 +45,7 @@ function ApplicationList({
           application={application}
           job={jobs?.get(application.jobId)}
           showApplicantInfo={showApplicantInfo}
+          showTimeline={showTimeline}
           onStatusChange={onStatusChange}
           isUpdating={isUpdating}
         />

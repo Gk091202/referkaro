@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { MapPin, Building2, Clock, User, CheckCircle2 } from "lucide-react";
+import {
+  MapPin,
+  Building2,
+  Clock,
+  User,
+  CheckCircle2,
+  Bookmark,
+  BadgeCheck,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,6 +22,9 @@ interface JobCardProps {
   showStatus?: boolean;
   href?: string;
   hasApplied?: boolean;
+  isSaved?: boolean;
+  onToggleSave?: (jobId: string) => void;
+  isVerifiedReferrer?: boolean;
 }
 
 function JobCard({
@@ -21,7 +32,16 @@ function JobCard({
   showStatus = false,
   href,
   hasApplied = false,
+  isSaved = false,
+  onToggleSave,
+  isVerifiedReferrer = false,
 }: JobCardProps) {
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleSave?.(job.$id);
+  };
+
   const content = (
     <Card hover={!!href} className="h-full">
       <CardContent className="p-0">
@@ -35,20 +55,42 @@ function JobCard({
               <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                 <Building2 className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate">{job.company}</span>
+                {isVerifiedReferrer && (
+                  <span title="Verified Referrer">
+                    <BadgeCheck className="h-4 w-4 text-primary flex-shrink-0" />
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              {hasApplied && (
-                <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-500">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Applied
-                </div>
+            <div className="flex items-center gap-2">
+              {onToggleSave && (
+                <button
+                  onClick={handleSaveClick}
+                  className={`p-1.5 rounded-lg transition-colors ${
+                    isSaved
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                  title={isSaved ? "Remove from saved" : "Save job"}
+                >
+                  <Bookmark
+                    className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`}
+                  />
+                </button>
               )}
-              {showStatus && (
-                <Badge variant={getStatusBadgeVariant(job.status)}>
-                  {job.status}
-                </Badge>
-              )}
+              <div className="flex flex-col items-end gap-2">
+                {hasApplied && (
+                  <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-500">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Applied
+                  </div>
+                )}
+                {showStatus && (
+                  <Badge variant={getStatusBadgeVariant(job.status)}>
+                    {job.status}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
 
