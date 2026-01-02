@@ -28,13 +28,20 @@ export function CTASection() {
               Welcome back, {user.name.split(" ")[0]}!
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              {user.role === "applicant" && "Browse available jobs and find your next opportunity."}
-              {user.role === "referrer" && "Manage your job postings and review applications."}
-              {user.role === "admin" && "Manage the platform, moderate jobs and users."}
+              {user.role === "applicant" &&
+                "Browse available jobs and find your next opportunity."}
+              {user.role === "referrer" &&
+                "Manage your job postings and review applications."}
+              {user.role === "admin" &&
+                "Manage the platform, moderate jobs and users."}
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/jobs">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
                   Browse Jobs
                 </Button>
               </Link>

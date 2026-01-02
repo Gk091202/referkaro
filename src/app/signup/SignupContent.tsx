@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { Briefcase, User, Users } from "lucide-react";
+import { User, Users } from "lucide-react";
 import { Card, CardContent, Button, Input, Alert } from "@/components/ui";
 import { useAuth } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
@@ -83,9 +84,14 @@ export function SignupContent() {
       </div>
 
       <Link href="/" className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <Briefcase className="h-5 w-5 text-primary-foreground" />
-        </div>
+        <Image
+          src="/logo.svg"
+          alt="referkaro logo"
+          width={40}
+          height={40}
+          className="h-10 w-10"
+          style={{ background: "transparent" }}
+        />
         <span className="text-2xl font-bold text-foreground">referkaro</span>
       </Link>
 

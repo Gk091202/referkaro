@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Menu,
@@ -74,9 +75,14 @@ function DashboardHeader({ role }: DashboardHeaderProps) {
       <div className="flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Briefcase className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <Image
+            src="/logo.svg"
+            alt="referkaro logo"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+            style={{ background: "transparent" }}
+          />
           <span className="text-lg font-bold text-foreground">referkaro</span>
         </Link>
 

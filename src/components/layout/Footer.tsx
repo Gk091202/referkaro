@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Briefcase, Github, Twitter, Linkedin } from "lucide-react";
+import Image from "next/image";
+import { Github, Twitter, Linkedin } from "lucide-react";
 
 function Footer() {
   const currentYear = new Date().getFullYear();
@@ -28,9 +29,14 @@ function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Briefcase className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="referkaro logo"
+                width={36}
+                height={36}
+                className="h-9 w-9"
+                style={{ background: "transparent" }}
+              />
               <span className="text-xl font-bold text-foreground">
                 referkaro
               </span>
