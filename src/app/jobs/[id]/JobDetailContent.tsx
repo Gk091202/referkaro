@@ -9,6 +9,7 @@ import {
   Clock,
   User,
   MessageSquare,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Card,
@@ -19,7 +20,7 @@ import {
   LoadingPage,
   Alert,
 } from "@/components/ui";
-import { getJobById } from "@/lib/appwrite/api";
+import { getJobById, checkExistingApplication } from "@/lib/appwrite/api";
 import { useAuth } from "@/lib/hooks";
 import { formatDate, getLocationLabel } from "@/lib/utils";
 import type { Job } from "@/lib/types";
@@ -33,6 +34,7 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasAlreadyApplied, setHasAlreadyApplied] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -44,6 +46,14 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
           setError("This job is not available");
         } else {
           setJob(jobData);
+          // Check if user has already applied (only for applicants)
+          if (user?.role === "applicant") {
+            const alreadyApplied = await checkExistingApplication(
+              jobId,
+              user.$id
+            );
+            setHasAlreadyApplied(alreadyApplied);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load job");
@@ -53,7 +63,7 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
     };
 
     fetchJob();
-  }, [jobId, user?.role]);
+  }, [jobId, user?.role, user?.$id]);
 
   if (isLoading) {
     return <LoadingPage message="Loading job details..." />;
@@ -76,7 +86,7 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
     );
   }
 
-  const canApply = isAuthenticated && user?.role === "applicant";
+  const canApply = isAuthenticated && user?.role === "applicant" && !hasAlreadyApplied;
 
   return (
     <div className="space-y-6">
@@ -127,6 +137,13 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
                   Apply Now
                 </Button>
               </Link>
+            )}
+
+            {isAuthenticated && user?.role === "applicant" && hasAlreadyApplied && (
+              <div className="flex items-center gap-2 rounded-lg bg-green-500/10 px-4 py-2 text-green-500">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="font-medium">Already Applied</span>
+              </div>
             )}
 
             {!isAuthenticated && (

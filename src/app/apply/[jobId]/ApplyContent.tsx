@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Building2, MapPin } from "lucide-react";
-import { Card, CardContent, Alert, LoadingPage } from "@/components/ui";
+import { ArrowLeft, Building2, MapPin, CheckCircle2 } from "lucide-react";
+import { Card, CardContent, Alert, LoadingPage, Button } from "@/components/ui";
 import { ApplicationForm } from "@/components/applications";
-import { getJobById } from "@/lib/appwrite/api";
+import { getJobById, checkExistingApplication } from "@/lib/appwrite/api";
 import { useProtectedRoute } from "@/lib/hooks";
 import { getLocationLabel } from "@/lib/utils";
 import type { Job } from "@/lib/types";
@@ -26,6 +26,7 @@ export function ApplyContent({ jobId }: ApplyContentProps) {
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasAlreadyApplied, setHasAlreadyApplied] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -37,6 +38,14 @@ export function ApplyContent({ jobId }: ApplyContentProps) {
           setError("This job is not accepting applications");
         } else {
           setJob(jobData);
+          // Check if user has already applied
+          if (user) {
+            const alreadyApplied = await checkExistingApplication(
+              jobId,
+              user.$id
+            );
+            setHasAlreadyApplied(alreadyApplied);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load job");
@@ -48,7 +57,7 @@ export function ApplyContent({ jobId }: ApplyContentProps) {
     if (!authLoading && isAuthorized) {
       fetchJob();
     }
-  }, [jobId, authLoading, isAuthorized]);
+  }, [jobId, authLoading, isAuthorized, user]);
 
   if (authLoading || isLoading) {
     return <LoadingPage message="Loading..." />;
@@ -122,13 +131,32 @@ export function ApplyContent({ jobId }: ApplyContentProps) {
         </CardContent>
       </Card>
 
-      {/* Application Form */}
+      {/* Application Form or Already Applied Status */}
       <Card>
         <CardContent>
-          <h2 className="text-lg font-semibold text-foreground mb-6">
-            Your Application
-          </h2>
-          <ApplicationForm job={job} />
+          {hasAlreadyApplied ? (
+            <div className="text-center py-8">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+                <CheckCircle2 className="h-8 w-8 text-green-500" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Already Applied
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                You have already submitted an application for this position.
+              </p>
+              <Link href="/dashboard/applicant/applications">
+                <Button variant="outline">View My Applications</Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold text-foreground mb-6">
+                Your Application
+              </h2>
+              <ApplicationForm job={job} />
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
