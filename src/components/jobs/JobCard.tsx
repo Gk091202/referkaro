@@ -16,7 +16,12 @@ interface JobCardProps {
   hasApplied?: boolean;
 }
 
-function JobCard({ job, showStatus = false, href, hasApplied = false }: JobCardProps) {
+function JobCard({
+  job,
+  showStatus = false,
+  href,
+  hasApplied = false,
+}: JobCardProps) {
   const content = (
     <Card hover={!!href} className="h-full">
       <CardContent className="p-0">

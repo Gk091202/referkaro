@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { JobList } from "@/components/jobs";
 import { LoadingPage, Alert } from "@/components/ui";
-import { getApprovedJobs, getApplicationsByApplicant } from "@/lib/appwrite/api";
+import {
+  getApprovedJobs,
+  getApplicationsByApplicant,
+} from "@/lib/appwrite/api";
 import { useAuth } from "@/lib/hooks";
 import type { Job } from "@/lib/types";
 

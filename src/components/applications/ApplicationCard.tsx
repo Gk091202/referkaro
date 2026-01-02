@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, ExternalLink, Building2 } from "lucide-react";
+import { Clock, ExternalLink, Building2, MessageSquare } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -71,6 +71,19 @@ function ApplicationCard({
           <p className="text-sm text-muted-foreground line-clamp-3">
             {application.message}
           </p>
+
+          {/* Referral Notes - shown to applicants */}
+          {!showApplicantInfo && job?.referralNotes && (
+            <div className="rounded-lg bg-secondary/50 p-3">
+              <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-muted-foreground">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Referral Notes from {job.referrerName}
+              </div>
+              <p className="text-sm text-muted-foreground line-clamp-3">
+                {job.referralNotes}
+              </p>
+            </div>
+          )}
 
           {/* Resume Link */}
           {application.resumeLink && (
