@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Building2, Clock, User } from "lucide-react";
+import { MapPin, Building2, Clock, User, CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,9 +13,10 @@ interface JobCardProps {
   job: Job;
   showStatus?: boolean;
   href?: string;
+  hasApplied?: boolean;
 }
 
-function JobCard({ job, showStatus = false, href }: JobCardProps) {
+function JobCard({ job, showStatus = false, href, hasApplied = false }: JobCardProps) {
   const content = (
     <Card hover={!!href} className="h-full">
       <CardContent className="p-0">
@@ -31,11 +32,19 @@ function JobCard({ job, showStatus = false, href }: JobCardProps) {
                 <span className="truncate">{job.company}</span>
               </div>
             </div>
-            {showStatus && (
-              <Badge variant={getStatusBadgeVariant(job.status)}>
-                {job.status}
-              </Badge>
-            )}
+            <div className="flex flex-col items-end gap-2">
+              {hasApplied && (
+                <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-500">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Applied
+                </div>
+              )}
+              {showStatus && (
+                <Badge variant={getStatusBadgeVariant(job.status)}>
+                  {job.status}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Description */}

@@ -86,7 +86,8 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
     );
   }
 
-  const canApply = isAuthenticated && user?.role === "applicant" && !hasAlreadyApplied;
+  const canApply =
+    isAuthenticated && user?.role === "applicant" && !hasAlreadyApplied;
 
   return (
     <div className="space-y-6">
@@ -139,12 +140,14 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
               </Link>
             )}
 
-            {isAuthenticated && user?.role === "applicant" && hasAlreadyApplied && (
-              <div className="flex items-center gap-2 rounded-lg bg-green-500/10 px-4 py-2 text-green-500">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium">Already Applied</span>
-              </div>
-            )}
+            {isAuthenticated &&
+              user?.role === "applicant" &&
+              hasAlreadyApplied && (
+                <div className="flex items-center gap-2 rounded-lg bg-green-500/10 px-4 py-2 text-green-500">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span className="font-medium">Already Applied</span>
+                </div>
+              )}
 
             {!isAuthenticated && (
               <Link href={`/login?redirect=/apply/${job.$id}`}>

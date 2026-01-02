@@ -10,6 +10,7 @@ interface JobListProps {
   emptyTitle?: string;
   emptyDescription?: string;
   showCreateButton?: boolean;
+  appliedJobIds?: string[];
 }
 
 function JobList({
@@ -18,6 +19,7 @@ function JobList({
   emptyTitle = "No jobs found",
   emptyDescription = "There are no jobs to display at the moment.",
   showCreateButton = false,
+  appliedJobIds = [],
 }: JobListProps) {
   if (jobs.length === 0) {
     return (
@@ -44,6 +46,7 @@ function JobList({
           job={job}
           showStatus={showStatus}
           href={`/jobs/${job.$id}`}
+          hasApplied={appliedJobIds.includes(job.$id)}
         />
       ))}
     </div>
