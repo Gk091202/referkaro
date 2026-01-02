@@ -8,7 +8,6 @@ import {
   PlusCircle,
   Users,
   Briefcase,
-  Settings,
   BarChart3,
   Shield,
 } from "lucide-react";
@@ -115,22 +114,6 @@ function DashboardSidebar({ role }: DashboardSidebarProps) {
             );
           })}
         </nav>
-
-        {/* Settings Link */}
-        <div className="border-t border-border pt-4">
-          <Link
-            href={`/dashboard/${role}/settings`}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-              pathname.includes("/settings")
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            )}
-          >
-            <Settings className="h-5 w-5" />
-            Settings
-          </Link>
-        </div>
       </div>
     </aside>
   );
