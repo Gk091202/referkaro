@@ -73,14 +73,14 @@ function ApplicationCard({
           </p>
 
           {/* Referral Notes - shown to applicants */}
-          {!showApplicantInfo && job?.referralNotes && (
+          {!showApplicantInfo && job && (
             <div className="rounded-lg bg-secondary/50 p-3">
               <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-muted-foreground">
                 <MessageSquare className="h-3.5 w-3.5" />
-                Referral Notes from {job.referrerName}
+                Notes from Referrer
               </div>
               <p className="text-sm text-muted-foreground line-clamp-3">
-                {job.referralNotes}
+                {job.referralNotes || "No additional notes provided."}
               </p>
             </div>
           )}
