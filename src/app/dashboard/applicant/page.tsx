@@ -2,21 +2,38 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, Briefcase, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  FileText,
+  Briefcase,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Sparkles,
+  Building2,
+  MapPin,
+  AlertCircle,
+} from "lucide-react";
 import {
   Card,
   CardContent,
   Button,
   LoadingSpinner,
   Alert,
+  Badge,
 } from "@/components/ui";
 import { useAuth } from "@/lib/hooks";
-import { getApplicationsByApplicant } from "@/lib/appwrite/api";
+import {
+  getApplicationsByApplicant,
+  getSuggestedJobs,
+  type SuggestedJob,
+} from "@/lib/appwrite/api";
+import { getLocationLabel } from "@/lib/utils";
 import type { Application } from "@/lib/types";
 
 export default function ApplicantDashboardPage() {
   const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [suggestedJobs, setSuggestedJobs] = useState<SuggestedJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +44,12 @@ export default function ApplicantDashboardPage() {
       try {
         const apps = await getApplicationsByApplicant(user.$id);
         setApplications(apps);
+
+        // Fetch suggested jobs based on user skills
+        if (user.skills && user.skills.length > 0) {
+          const suggestions = await getSuggestedJobs(user.skills, 5);
+          setSuggestedJobs(suggestions);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
@@ -151,6 +174,101 @@ export default function ApplicantDashboardPage() {
               </Button>
             </Link>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Recommended Jobs */}
+      <Card>
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">
+                Recommended for You
+              </h2>
+            </div>
+            {suggestedJobs.length > 0 && (
+              <Link
+                href="/jobs"
+                className="text-sm text-primary hover:underline"
+              >
+                View all jobs
+              </Link>
+            )}
+          </div>
+
+          {!user?.skills || user.skills.length === 0 ? (
+            <div className="text-center py-8 bg-secondary/30 rounded-lg">
+              <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-4 text-muted-foreground">
+                Add skills to your profile to get personalized job
+                recommendations
+              </p>
+              <Link href="/dashboard/applicant/profile">
+                <Button className="mt-4" variant="outline">
+                  Update Profile
+                </Button>
+              </Link>
+            </div>
+          ) : suggestedJobs.length === 0 ? (
+            <div className="text-center py-8">
+              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-4 text-muted-foreground">
+                No matching jobs found for your skills yet. Check back later!
+              </p>
+              <Link href="/jobs">
+                <Button className="mt-4">Browse All Jobs</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {suggestedJobs.map((job) => (
+                <Link key={job.$id} href={`/jobs/${job.$id}`} className="block">
+                  <div className="rounded-lg border border-border p-4 hover:border-primary/50 hover:bg-secondary/30 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-foreground truncate">
+                          {job.role}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-3.5 w-3.5" />
+                            {job.company}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {getLocationLabel(job.location)}
+                          </span>
+                        </div>
+                        {job.matchedSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {job.matchedSkills.slice(0, 3).map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="secondary"
+                                className="text-xs bg-primary/10 text-primary"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                            {job.matchedSkills.length > 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{job.matchedSkills.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
+                        <Sparkles className="h-3 w-3" />
+                        {Math.round(job.matchScore * 20)}% match
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

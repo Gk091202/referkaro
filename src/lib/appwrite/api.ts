@@ -307,6 +307,55 @@ export async function getApprovedJobs(): Promise<Job[]> {
   return response.documents as unknown as Job[];
 }
 
+export interface SuggestedJob extends Job {
+  matchScore: number;
+  matchedSkills: string[];
+}
+
+export async function getSuggestedJobs(
+  skills: string[],
+  limit: number = 5
+): Promise<SuggestedJob[]> {
+  if (!skills || skills.length === 0) {
+    return [];
+  }
+
+  // Get all approved jobs
+  const jobs = await getApprovedJobs();
+
+  // Score each job based on skill matches
+  const scoredJobs: SuggestedJob[] = jobs.map((job) => {
+    const jobText =
+      `${job.role} ${job.description} ${job.company}`.toLowerCase();
+    const matchedSkills: string[] = [];
+    let matchScore = 0;
+
+    skills.forEach((skill) => {
+      const skillLower = skill.toLowerCase().trim();
+      if (skillLower && jobText.includes(skillLower)) {
+        matchScore += 1;
+        matchedSkills.push(skill);
+      }
+      // Bonus for exact role match
+      if (job.role.toLowerCase().includes(skillLower)) {
+        matchScore += 0.5;
+      }
+    });
+
+    return {
+      ...job,
+      matchScore,
+      matchedSkills,
+    };
+  });
+
+  // Filter jobs with at least one match, sort by score, return top N
+  return scoredJobs
+    .filter((job) => job.matchScore > 0)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, limit);
+}
+
 export async function getJobsByReferrer(referrerId: string): Promise<Job[]> {
   const response = await databases.listDocuments(
     DATABASE_ID,
@@ -659,36 +708,35 @@ export async function updateUserProfile(
     emailNotifications?: boolean;
   }
 ): Promise<User> {
-  // Only include fields that exist in your Appwrite users collection
-  // Add more fields here after creating them in Appwrite Console
-  const allowedFields: Record<string, unknown> = {};
+  // Fetch current user to get existing values for required fields
+  const currentUser = await databases.getDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId
+  );
+  const existingUser = currentUser as unknown as User;
 
-  // These are the fields that exist in your Appwrite users collection
-  if (data.name !== undefined) allowedFields.name = data.name;
-  if (data.bio !== undefined) allowedFields.bio = data.bio;
-  if (data.linkedin !== undefined) allowedFields.linkedin = data.linkedin;
-  if (data.github !== undefined) allowedFields.github = data.github;
-  if (data.portfolio !== undefined) allowedFields.portfolio = data.portfolio;
-  if (data.skills !== undefined) allowedFields.skills = data.skills;
-  if (data.company !== undefined) allowedFields.company = data.company;
+  // Build update object with all required fields preserved
+  const updateData: Record<string, unknown> = {
+    // Always include required fields with existing values as fallback
+    company: data.company ?? existingUser.company ?? "",
+  };
+
+  // Add optional fields only if provided
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.bio !== undefined) updateData.bio = data.bio;
+  if (data.linkedin !== undefined) updateData.linkedin = data.linkedin;
+  if (data.github !== undefined) updateData.github = data.github;
+  if (data.portfolio !== undefined) updateData.portfolio = data.portfolio;
+  if (data.skills !== undefined) updateData.skills = data.skills;
   if (data.emailNotifications !== undefined)
-    allowedFields.emailNotifications = data.emailNotifications;
-
-  if (Object.keys(allowedFields).length === 0) {
-    // Nothing to update, just return current user
-    const userDoc = await databases.getDocument(
-      DATABASE_ID,
-      COLLECTIONS.USERS,
-      userId
-    );
-    return userDoc as unknown as User;
-  }
+    updateData.emailNotifications = data.emailNotifications;
 
   const userDoc = await databases.updateDocument(
     DATABASE_ID,
     COLLECTIONS.USERS,
     userId,
-    allowedFields
+    updateData
   );
   return userDoc as unknown as User;
 }
