@@ -153,11 +153,22 @@ export default function ReferrerProfilePage() {
                   </div>
                 )}
 
-                {referrer.isVerified && (
-                  <Badge variant="success" className="mb-4">
-                    ✓ Verified Employee
-                  </Badge>
-                )}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {referrer.isVerified && (
+                    <Badge variant="success">✓ Verified Employee</Badge>
+                  )}
+                  {referrer.linkedinConnected ? (
+                    <Badge className="bg-[#0A66C2] text-white">
+                      <Linkedin className="h-3 w-3 mr-1" />
+                      LinkedIn Verified
+                    </Badge>
+                  ) : referrer.linkedin ? (
+                    <Badge className="bg-[#0A66C2]/70 text-white">
+                      <Linkedin className="h-3 w-3 mr-1" />
+                      LinkedIn Added
+                    </Badge>
+                  ) : null}
+                </div>
 
                 {referrer.bio && (
                   <p className="text-muted-foreground mb-4">{referrer.bio}</p>

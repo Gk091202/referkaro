@@ -46,6 +46,10 @@ export interface User {
   verificationRequested?: boolean;
   verifiedAt?: string;
   emailNotifications?: boolean;
+  // LinkedIn OAuth fields
+  linkedinConnected?: boolean;
+  linkedinId?: string;
+  linkedinProfileUrl?: string;
 }
 
 // Job Document

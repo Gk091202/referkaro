@@ -706,6 +706,9 @@ export async function updateUserProfile(
     skills?: string[];
     company?: string;
     emailNotifications?: boolean;
+    linkedinConnected?: boolean;
+    linkedinId?: string;
+    linkedinProfileUrl?: string;
   }
 ): Promise<User> {
   // Fetch current user to get existing values for required fields
@@ -720,17 +723,24 @@ export async function updateUserProfile(
   const updateData: Record<string, unknown> = {
     // Always include required fields with existing values as fallback
     company: data.company ?? existingUser.company ?? "",
+    bio: data.bio ?? existingUser.bio ?? "",
+    github: data.github ?? existingUser.github ?? "",
+    portfolio: data.portfolio ?? existingUser.portfolio ?? "",
+    linkedin: data.linkedin ?? existingUser.linkedin ?? "",
   };
 
   // Add optional fields only if provided
   if (data.name !== undefined) updateData.name = data.name;
-  if (data.bio !== undefined) updateData.bio = data.bio;
-  if (data.linkedin !== undefined) updateData.linkedin = data.linkedin;
-  if (data.github !== undefined) updateData.github = data.github;
-  if (data.portfolio !== undefined) updateData.portfolio = data.portfolio;
   if (data.skills !== undefined) updateData.skills = data.skills;
   if (data.emailNotifications !== undefined)
     updateData.emailNotifications = data.emailNotifications;
+
+  // LinkedIn OAuth fields
+  if (data.linkedinConnected !== undefined)
+    updateData.linkedinConnected = data.linkedinConnected;
+  if (data.linkedinId !== undefined) updateData.linkedinId = data.linkedinId;
+  if (data.linkedinProfileUrl !== undefined)
+    updateData.linkedinProfileUrl = data.linkedinProfileUrl;
 
   const userDoc = await databases.updateDocument(
     DATABASE_ID,
@@ -860,4 +870,127 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
       .filter((n) => !n.isRead)
       .map((n) => markNotificationRead(n.$id))
   );
+}
+
+// ============================================
+// LINKEDIN OAUTH
+// ============================================
+
+export function getLinkedInOAuthUrl(): string {
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const successUrl = `${baseUrl}/auth/linkedin/callback`;
+  const failureUrl = `${baseUrl}/auth/linkedin/callback?error=true`;
+
+  // Appwrite OAuth2 URL for LinkedIn
+  const endpoint =
+    process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1";
+  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "";
+
+  return `${endpoint}/account/sessions/oauth2/linkedin?project=${projectId}&success=${encodeURIComponent(
+    successUrl
+  )}&failure=${encodeURIComponent(failureUrl)}`;
+}
+
+export async function connectLinkedIn(): Promise<void> {
+  // Redirect to LinkedIn OAuth
+  const url = getLinkedInOAuthUrl();
+  window.location.href = url;
+}
+
+export async function handleLinkedInCallback(): Promise<{
+  success: boolean;
+  userData?: {
+    name: string;
+    email: string;
+    linkedinId: string;
+  };
+  error?: string;
+}> {
+  try {
+    // Get the current session after OAuth callback
+    const session = await account.getSession("current");
+
+    if (!session) {
+      return { success: false, error: "No session found" };
+    }
+
+    // Get user info
+    const authUser = await account.get();
+
+    return {
+      success: true,
+      userData: {
+        name: authUser.name || "",
+        email: authUser.email || "",
+        linkedinId: session.providerUid || "",
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "OAuth callback failed",
+    };
+  }
+}
+
+export async function updateUserLinkedInData(
+  userId: string,
+  linkedinData: {
+    linkedinConnected: boolean;
+    linkedinId?: string;
+    linkedinProfileUrl?: string;
+    name?: string;
+  }
+): Promise<User> {
+  // Fetch current user to preserve required fields
+  const currentUser = await databases.getDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId
+  );
+  const existingUser = currentUser as unknown as User;
+
+  const updateData: Record<string, unknown> = {
+    company: existingUser.company ?? "",
+    linkedinConnected: linkedinData.linkedinConnected,
+  };
+
+  if (linkedinData.linkedinId) {
+    updateData.linkedinId = linkedinData.linkedinId;
+  }
+  if (linkedinData.linkedinProfileUrl) {
+    updateData.linkedin = linkedinData.linkedinProfileUrl;
+  }
+  if (linkedinData.name && !existingUser.name) {
+    updateData.name = linkedinData.name;
+  }
+
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    updateData
+  );
+  return userDoc as unknown as User;
+}
+
+export async function disconnectLinkedIn(userId: string): Promise<User> {
+  const currentUser = await databases.getDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId
+  );
+  const existingUser = currentUser as unknown as User;
+
+  const userDoc = await databases.updateDocument(
+    DATABASE_ID,
+    COLLECTIONS.USERS,
+    userId,
+    {
+      company: existingUser.company ?? "",
+      linkedinConnected: false,
+      linkedinId: null,
+    }
+  );
+  return userDoc as unknown as User;
 }

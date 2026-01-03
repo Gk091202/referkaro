@@ -25,6 +25,7 @@ import {
   Textarea,
   Badge,
 } from "@/components/ui";
+import { LinkedInConnect } from "@/components/auth";
 
 export default function ProfilePage() {
   useProtectedRoute({ allowedRoles: ["applicant", "referrer"] });
@@ -156,6 +157,19 @@ export default function ProfilePage() {
           {success}
         </Alert>
       )}
+
+      {/* LinkedIn Profile */}
+      <Card>
+        <CardContent className="p-0 space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            LinkedIn Profile
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Add your LinkedIn profile to help referrers learn more about you.
+          </p>
+          <LinkedInConnect user={user} onUpdate={refreshUser} />
+        </CardContent>
+      </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}

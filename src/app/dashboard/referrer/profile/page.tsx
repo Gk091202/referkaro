@@ -22,6 +22,7 @@ import {
   Textarea,
   Badge,
 } from "@/components/ui";
+import { LinkedInConnect } from "@/components/auth";
 
 export default function ReferrerProfilePage() {
   useProtectedRoute({ allowedRoles: ["referrer"] });
@@ -78,9 +79,11 @@ export default function ReferrerProfilePage() {
   const handleRequestVerification = async () => {
     if (!user || user.isVerified || user.verificationRequested) return;
 
-    // Check if LinkedIn is provided
-    if (!formData.linkedin) {
-      setError("Please add your LinkedIn profile to request verification");
+    // Check if LinkedIn is verified via OAuth
+    if (!user.linkedinConnected) {
+      setError(
+        "Please connect your LinkedIn account via OAuth to request verification"
+      );
       return;
     }
 
@@ -154,7 +157,7 @@ export default function ReferrerProfilePage() {
                 <p className="text-sm text-muted-foreground mt-1">
                   {user.verificationRequested
                     ? "Your verification request is being reviewed by our team. You'll be notified once it's approved."
-                    : "Verified referrers get a badge on their job postings, increasing trust with applicants. Add your LinkedIn profile to request verification."}
+                    : "Verified referrers get a badge on their job postings, increasing trust with applicants. Add your LinkedIn to request verification."}
                 </p>
                 {!user.verificationRequested && (
                   <Button
@@ -176,6 +179,21 @@ export default function ReferrerProfilePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* LinkedIn Profile */}
+      <Card>
+        <CardContent className="p-0 space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            LinkedIn Profile
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Add your LinkedIn profile to verify your employment and speed up the
+            verification process.
+            {user.linkedin && " ✓ LinkedIn profile added!"}
+          </p>
+          <LinkedInConnect user={user} onUpdate={refreshUser} />
+        </CardContent>
+      </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
