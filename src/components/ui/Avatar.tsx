@@ -3,7 +3,7 @@ import { getInitials } from "@/lib/utils";
 
 interface AvatarProps {
   name: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
@@ -12,6 +12,7 @@ function Avatar({ name, size = "md", className }: AvatarProps) {
     sm: "h-8 w-8 text-xs",
     md: "h-10 w-10 text-sm",
     lg: "h-14 w-14 text-base",
+    xl: "h-20 w-20 text-2xl",
   };
 
   // Generate consistent color based on name

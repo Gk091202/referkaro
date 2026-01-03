@@ -20,9 +20,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Privacy Policy
           </h1>
-          <p className="text-muted-foreground">
-            Last updated: January 2, 2026
-          </p>
+          <p className="text-muted-foreground">Last updated: January 2, 2026</p>
         </div>
 
         {/* Content */}
@@ -34,9 +32,9 @@ export default function PrivacyPage() {
                   1. Information We Collect
                 </h2>
                 <p>
-                  We collect information you provide directly to us, such as when
-                  you create an account, submit a job application, or contact us
-                  for support. This may include:
+                  We collect information you provide directly to us, such as
+                  when you create an account, submit a job application, or
+                  contact us for support. This may include:
                 </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Name and email address</li>
@@ -105,8 +103,8 @@ export default function PrivacyPage() {
                   6. Contact Us
                 </h2>
                 <p>
-                  If you have questions about this Privacy Policy, please contact
-                  us at{" "}
+                  If you have questions about this Privacy Policy, please
+                  contact us at{" "}
                   <a
                     href="mailto:privacy@referkaro.com"
                     className="text-primary hover:underline"

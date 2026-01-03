@@ -23,8 +23,8 @@ export default function AboutPage() {
             About referkaro
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            We&apos;re on a mission to make job referrals accessible to everyone,
-            not just those with connections.
+            We&apos;re on a mission to make job referrals accessible to
+            everyone, not just those with connections.
           </p>
         </div>
 
@@ -54,8 +54,8 @@ export default function AboutPage() {
                 Community First
               </h3>
               <p className="text-sm text-muted-foreground">
-                We believe in building a community where referrers and applicants
-                can connect authentically.
+                We believe in building a community where referrers and
+                applicants can connect authentically.
               </p>
             </CardContent>
           </Card>
@@ -84,9 +84,9 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                referkaro was born out of a simple observation: the best jobs often
-                go to people with the right connections, not necessarily the most
-                qualified candidates.
+                referkaro was born out of a simple observation: the best jobs
+                often go to people with the right connections, not necessarily
+                the most qualified candidates.
               </p>
               <p>
                 We wanted to change that. We built a platform where employees at
@@ -94,9 +94,9 @@ export default function AboutPage() {
                 individuals they might never have met otherwise.
               </p>
               <p>
-                Today, referkaro connects thousands of job seekers with referrers
-                at leading companies, helping level the playing field in the job
-                market.
+                Today, referkaro connects thousands of job seekers with
+                referrers at leading companies, helping level the playing field
+                in the job market.
               </p>
             </div>
           </CardContent>

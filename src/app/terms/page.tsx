@@ -20,9 +20,7 @@ export default function TermsPage() {
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Terms of Service
           </h1>
-          <p className="text-muted-foreground">
-            Last updated: January 2, 2026
-          </p>
+          <p className="text-muted-foreground">Last updated: January 2, 2026</p>
         </div>
 
         {/* Content */}
@@ -34,9 +32,9 @@ export default function TermsPage() {
                   1. Acceptance of Terms
                 </h2>
                 <p>
-                  By accessing or using referkaro, you agree to be bound by these
-                  Terms of Service. If you do not agree to these terms, please do
-                  not use our service.
+                  By accessing or using referkaro, you agree to be bound by
+                  these Terms of Service. If you do not agree to these terms,
+                  please do not use our service.
                 </p>
               </section>
 
@@ -45,9 +43,10 @@ export default function TermsPage() {
                   2. Description of Service
                 </h2>
                 <p>
-                  referkaro is a platform that connects job seekers with employees
-                  at companies who are willing to provide referrals. We facilitate
-                  connections but do not guarantee employment outcomes.
+                  referkaro is a platform that connects job seekers with
+                  employees at companies who are willing to provide referrals.
+                  We facilitate connections but do not guarantee employment
+                  outcomes.
                 </p>
               </section>
 
@@ -55,7 +54,10 @@ export default function TermsPage() {
                 <h2 className="text-xl font-semibold text-foreground mb-3">
                   3. User Accounts
                 </h2>
-                <p>To use certain features, you must create an account. You agree to:</p>
+                <p>
+                  To use certain features, you must create an account. You agree
+                  to:
+                </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Provide accurate and complete information</li>
                   <li>Maintain the security of your account credentials</li>
@@ -108,10 +110,10 @@ export default function TermsPage() {
                   7. Limitation of Liability
                 </h2>
                 <p>
-                  referkaro is provided &quot;as is&quot; without warranties of any kind. We
-                  are not liable for any damages arising from your use of the
-                  service, including but not limited to employment decisions made
-                  by third parties.
+                  referkaro is provided &quot;as is&quot; without warranties of
+                  any kind. We are not liable for any damages arising from your
+                  use of the service, including but not limited to employment
+                  decisions made by third parties.
                 </p>
               </section>
 
@@ -120,9 +122,9 @@ export default function TermsPage() {
                   8. Termination
                 </h2>
                 <p>
-                  We reserve the right to suspend or terminate your account at any
-                  time for violations of these terms or for any other reason at
-                  our discretion.
+                  We reserve the right to suspend or terminate your account at
+                  any time for violations of these terms or for any other reason
+                  at our discretion.
                 </p>
               </section>
 

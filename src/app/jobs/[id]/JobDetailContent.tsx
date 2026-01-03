@@ -199,11 +199,18 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
       {/* Referrer Info */}
       <Card>
         <CardContent>
-          <div className="flex items-center gap-2 mb-4">
-            <User className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">
-              About the Referrer
-            </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">
+                About the Referrer
+              </h2>
+            </div>
+            <Link href={`/referrer/${job.referrerId}`}>
+              <Button variant="outline" size="sm">
+                View Full Profile
+              </Button>
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary font-semibold">
@@ -211,9 +218,12 @@ export function JobDetailContent({ jobId }: JobDetailContentProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-medium text-foreground">
+                <Link
+                  href={`/referrer/${job.referrerId}`}
+                  className="font-medium text-foreground hover:text-primary transition-colors"
+                >
                   {job.referrerName}
-                </p>
+                </Link>
                 {job.isReferrerVerified && (
                   <span title="Verified Referrer" className="flex items-center">
                     <BadgeCheck className="h-5 w-5 text-primary" />

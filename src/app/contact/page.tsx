@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail, MessageSquare, Send } from "lucide-react";
-import { Card, CardContent, Button, Input, Textarea, Alert } from "@/components/ui";
+import {
+  Card,
+  CardContent,
+  Button,
+  Input,
+  Textarea,
+  Alert,
+} from "@/components/ui";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -18,10 +25,10 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     setSuccess(true);
     setFormData({ name: "", email: "", subject: "", message: "" });
     setIsSubmitting(false);
@@ -54,7 +61,8 @@ export default function ContactPage() {
 
         {success && (
           <Alert variant="success" title="Message Sent!" className="mb-6">
-            Thank you for reaching out. We&apos;ll get back to you within 24-48 hours.
+            Thank you for reaching out. We&apos;ll get back to you within 24-48
+            hours.
           </Alert>
         )}
 
@@ -84,7 +92,10 @@ export default function ContactPage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, email: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
                     }
                     placeholder="you@example.com"
                     required
@@ -99,7 +110,10 @@ export default function ContactPage() {
                 <Input
                   value={formData.subject}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, subject: e.target.value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      subject: e.target.value,
+                    }))
                   }
                   placeholder="How can we help?"
                   required
@@ -113,7 +127,10 @@ export default function ContactPage() {
                 <Textarea
                   value={formData.message}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, message: e.target.value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      message: e.target.value,
+                    }))
                   }
                   placeholder="Tell us more about your inquiry..."
                   rows={5}

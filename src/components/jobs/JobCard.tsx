@@ -109,10 +109,14 @@ function JobCard({
               <Clock className="h-4 w-4" />
               <span>{formatRelativeDate(job.$createdAt)}</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <Link
+              href={`/referrer/${job.referrerId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            >
               <User className="h-4 w-4" />
-              <span>{job.referrerName}</span>
-            </div>
+              <span className="hover:underline">{job.referrerName}</span>
+            </Link>
           </div>
         </div>
       </CardContent>
