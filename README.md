@@ -13,7 +13,7 @@ A modern, referral-based job board that connects people who can refer with those
 
 ### Core Functionality
 
-- **Role-based Access Control** - Three distinct user roles with specific permissions
+- **Role-based Access Control** - Three distinct user roles with specific permissions 
 - **Job Referral System** - Referrers post jobs, applicants apply, admin moderates
 - **Application Tracking** - Real-time status updates for applications
 - **Admin Moderation** - Content review and user management
