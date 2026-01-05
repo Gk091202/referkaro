@@ -148,7 +148,7 @@ referkaro/
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/yourusername/referkaro.git
+git clone https://github.com/Gk091202/referkaro
 cd referkaro
 npm install
 ```
