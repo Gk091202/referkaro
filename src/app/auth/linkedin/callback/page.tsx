@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Linkedin, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { Card, CardContent, Button, Alert } from "@/components/ui";
+import { Card, CardContent, Button, Alert, Input } from "@/components/ui";
 import { updateUserProfile, getCurrentUser } from "@/lib/appwrite/api";
 import { useAuth } from "@/lib/hooks";
 
@@ -15,6 +15,9 @@ function LinkedInCallbackContent() {
     "loading"
   );
   const [message, setMessage] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const processCallback = async () => {
@@ -69,12 +72,21 @@ function LinkedInCallbackContent() {
 
         if (currentUser) {
           // Update user with LinkedIn data
+          // Use the profile URL from LinkedIn API if available
+          const linkedinUrlFromApi = linkedinData.profileUrl || "";
+          
           await updateUserProfile(currentUser.$id, {
-            linkedin: `https://linkedin.com/in/${linkedinData.linkedinId}`,
             linkedinConnected: true,
             linkedinId: linkedinData.linkedinId,
-            linkedinProfileUrl: `https://linkedin.com/in/${linkedinData.linkedinId}`,
+            ...(linkedinUrlFromApi ? { linkedin: linkedinUrlFromApi, linkedinProfileUrl: linkedinUrlFromApi } : {}),
           });
+          
+          setCurrentUserId(currentUser.$id);
+          
+          // Pre-fill the URL input if we got one from API
+          if (linkedinUrlFromApi) {
+            setLinkedinUrl(linkedinUrlFromApi);
+          }
 
           // Refresh user context
           if (refreshUser) {
@@ -86,9 +98,9 @@ function LinkedInCallbackContent() {
 
           setStatus("success");
           setMessage(
-            `LinkedIn connected successfully! Welcome, ${
+            `LinkedIn verified successfully! Welcome, ${
               linkedinData.name || "User"
-            }!`
+            }! You can add your LinkedIn profile URL in your profile settings.`
           );
         } else {
           setStatus("error");
@@ -106,6 +118,35 @@ function LinkedInCallbackContent() {
 
     processCallback();
   }, [searchParams, refreshUser]);
+
+  const handleSaveLinkedinUrl = async () => {
+    if (!linkedinUrl || !currentUserId) return;
+    
+    // Validate URL format
+    if (!linkedinUrl.includes('linkedin.com/in/')) {
+      setMessage("Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/yourname)");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await updateUserProfile(currentUserId, {
+        linkedin: linkedinUrl,
+        linkedinProfileUrl: linkedinUrl,
+      });
+      
+      if (refreshUser) {
+        await refreshUser();
+      }
+      
+      // Redirect to profile
+      handleContinue();
+    } catch (err) {
+      setMessage("Failed to save LinkedIn URL. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleContinue = () => {
     // Redirect based on user role
@@ -142,13 +183,14 @@ function LinkedInCallbackContent() {
                 <CheckCircle2 className="h-8 w-8 text-green-500" />
               </div>
               <h1 className="text-xl font-semibold text-foreground mb-2">
-                LinkedIn Connected!
+                LinkedIn Verified!
               </h1>
-              <p className="text-muted-foreground mb-6">{message}</p>
+              <p className="text-muted-foreground mb-4">{message}</p>
               <div className="flex items-center justify-center gap-2 text-sm text-primary mb-6">
                 <Linkedin className="h-4 w-4" />
                 <span>Your profile is now verified with LinkedIn</span>
               </div>
+              
               <Button onClick={handleContinue} className="w-full">
                 Continue to Profile
               </Button>

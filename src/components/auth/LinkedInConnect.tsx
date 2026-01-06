@@ -82,21 +82,31 @@ export function LinkedInConnect({
   };
 
   const isConnected = user.linkedinConnected && user.linkedinId;
+  
+  // Check if user has a valid LinkedIn URL (not just the internal ID)
+  const hasValidLinkedInUrl = user.linkedin && user.linkedin.includes('linkedin.com/in/');
 
   if (variant === "button") {
     if (isConnected) {
       return (
         <div className="flex items-center gap-2">
-          <a
-            href={user.linkedinProfileUrl || user.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-[#0A66C2] hover:underline"
-          >
-            <Linkedin className="h-4 w-4" />
-            <span>LinkedIn Profile</span>
-            <ExternalLink className="h-3 w-3" />
-          </a>
+          {hasValidLinkedInUrl ? (
+            <a
+              href={user.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-sm text-[#0A66C2] hover:underline"
+            >
+              <Linkedin className="h-4 w-4" />
+              <span>LinkedIn Profile</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          ) : (
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Linkedin className="h-4 w-4" />
+              <span>LinkedIn Connected</span>
+            </span>
+          )}
           <span className="flex items-center gap-1 text-xs text-green-600">
             <ShieldCheck className="h-3 w-3" />
             Verified
@@ -154,15 +164,21 @@ export function LinkedInConnect({
           <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
             <Linkedin className="h-5 w-5 text-[#0A66C2]" />
             <div className="flex-1 min-w-0">
-              <a
-                href={user.linkedinProfileUrl || user.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-[#0A66C2] hover:underline truncate block"
-              >
-                {user.linkedinProfileUrl || user.linkedin}
-                <ExternalLink className="inline h-3 w-3 ml-1" />
-              </a>
+              {hasValidLinkedInUrl ? (
+                <a
+                  href={user.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#0A66C2] hover:underline truncate block"
+                >
+                  {user.linkedin}
+                  <ExternalLink className="inline h-3 w-3 ml-1" />
+                </a>
+              ) : (
+                <p className="text-sm text-green-600 font-medium">
+                  ✓ LinkedIn account verified
+                </p>
+              )}
             </div>
           </div>
 

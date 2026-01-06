@@ -7,6 +7,7 @@ const REDIRECT_URI =
   "http://localhost:3000/auth/linkedin/callback";
 const LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
 const LINKEDIN_USERINFO_URL = "https://api.linkedin.com/v2/userinfo";
+const LINKEDIN_ME_URL = "https://api.linkedin.com/v2/me";
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,6 +74,28 @@ export async function POST(request: NextRequest) {
 
     const profile = await profileResponse.json();
 
+    // Try to get vanity name from /v2/me endpoint
+    let vanityName = "";
+    let profileUrl = "";
+    
+    try {
+      const meResponse = await fetch(`${LINKEDIN_ME_URL}?projection=(id,vanityName)`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      
+      if (meResponse.ok) {
+        const meData = await meResponse.json();
+        vanityName = meData.vanityName || "";
+        if (vanityName) {
+          profileUrl = `https://www.linkedin.com/in/${vanityName}`;
+        }
+      }
+    } catch (err) {
+      console.log("Could not fetch vanity name from /v2/me:", err);
+    }
+
     // Return LinkedIn profile data
     return NextResponse.json({
       linkedinId: profile.sub,
@@ -82,6 +105,8 @@ export async function POST(request: NextRequest) {
       email: profile.email,
       picture: profile.picture,
       emailVerified: profile.email_verified,
+      vanityName: vanityName,
+      profileUrl: profileUrl,
     });
   } catch (error) {
     console.error("LinkedIn OAuth error:", error);
